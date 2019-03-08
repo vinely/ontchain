@@ -194,7 +194,27 @@ type Identity struct {
 	scrypt      *keypair.ScryptParam
 }
 
-// NewIdentity -
+// GetDefaultIdentityFromID - generate identity from id string
+func GetDefaultIdentityFromID(id string, passwd []byte) (*Identity, error) {
+	identity, err := NewIdentity(keypair.GetScryptParameters())
+	if err != nil {
+		return nil, err
+	}
+	identity.ID = id
+	//Key Index start from 1
+	controllerID := "1"
+	controllerData, err := NewControllerData(controllerID, keypair.PK_ECDSA, keypair.P256, s.SHA256withECDSA, passwd)
+	if err != nil {
+		return nil, err
+	}
+	err = identity.AddControllerData(controllerData)
+	if err != nil {
+		return nil, err
+	}
+	return identity, nil
+}
+
+// NewIdentity - new identity with scrypt
 func NewIdentity(scrypt *keypair.ScryptParam) (*Identity, error) {
 	id, err := GenerateID()
 	if err != nil {
