@@ -17,7 +17,9 @@ var (
 	claimcontract = "36bb5c053b6b839c8f6b923fe852f91239b9fccc"
 )
 
-// Claim -
+// Claim - Claim is a contract that save the document hash to record content impartially
+// commiter is the claim issuer. Who wants to claim this issue should be first creator of claim and had the operation power.
+// owner is the administrator of this claim. owner is who had authority to manage this claim.
 type Claim struct {
 	Claim    []byte
 	Commiter []byte

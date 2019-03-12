@@ -42,8 +42,8 @@ func GetIdentityFromID(id string, passwd []byte) (*ManagedIdentity, error) {
 	return &ManagedIdentity{*identity, passwd}, nil
 }
 
-// RegIDWithAttributes -register id with attributes
-func RegIDWithAttributes(id *ManagedIdentity, attributes []*sdk.DDOAttribute, signer *sdk.Account) {
+// RegisterID - register id to blockchain
+func (id *ManagedIdentity) RegisterID(signer *sdk.Account) {
 	sdk := GetSdk("")
 	// ctl, err := id.NewController("2", keypair.PK_ECDSA, keypair.P256, s.SHA256withECDSA, password)
 	ctl, err := id.GetControllerByIndex(1, id.Password)
@@ -51,11 +51,58 @@ func RegIDWithAttributes(id *ManagedIdentity, attributes []*sdk.DDOAttribute, si
 		log.Fatal(err)
 		return
 	}
+	_, err = sdk.Native.OntID.RegIDWithPublicKey(0, 20000, signer, id.ID, ctl)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+}
+
+// RegIDWithAttributes -register id with attributes
+func (id *ManagedIdentity) RegIDWithAttributes(attr map[string]string, signer *sdk.Account) {
+	sdk := GetSdk("")
+	// ctl, err := id.NewController("2", keypair.PK_ECDSA, keypair.P256, s.SHA256withECDSA, password)
+	ctl, err := id.GetControllerByIndex(1, id.Password)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	attributes := StringMap2Attributes(attr)
 	_, err = sdk.Native.OntID.RegIDWithAttributes(0, 20000, signer, id.ID, ctl, attributes)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
+}
+
+// Attributes2StringMaps - attributes to map
+func Attributes2StringMaps(attributes []*sdk.DDOAttribute) map[string]string {
+	l := len(attributes)
+	if l <= 0 {
+		return nil
+	}
+	result := make(map[string]string, l)
+	for _, v := range attributes {
+		result[string(v.Key)] = string(v.Value)
+	}
+	return result
+}
+
+// StringMap2Attributes - stringmap to attributes
+func StringMap2Attributes(attr map[string]string) []*sdk.DDOAttribute {
+	l := len(attr)
+	if l <= 0 {
+		return nil
+	}
+	result := []*sdk.DDOAttribute{}
+	for k := range attr {
+		result = append(result, &sdk.DDOAttribute{
+			Key:       []byte(k),
+			ValueType: []byte("string"),
+			Value:     []byte(attr[k]),
+		})
+	}
+	return result
 }
 
 // GetDDO - get ddo by id
