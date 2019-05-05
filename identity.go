@@ -42,11 +42,16 @@ func GetIdentityFromID(id string, passwd []byte) (*ManagedIdentity, error) {
 	return &ManagedIdentity{*identity.ToIdentityData(), passwd}, nil
 }
 
+// Identity - get identity from managedidentity
+func (id *ManagedIdentity) Identity() (*sdk.Identity, error) {
+	return sdk.NewIdentityFromIdentityData(&id.IdentityData)
+}
+
 // RegisterID - register id to blockchain
 func (id *ManagedIdentity) RegisterID(signer *sdk.Account) {
 	s := GetSdk("")
 	// ctl, err := id.NewController("2", keypair.PK_ECDSA, keypair.P256, s.SHA256withECDSA, password)
-	i, err := sdk.NewIdentityFromIdentityData(&id.IdentityData)
+	i, err := id.Identity()
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -67,7 +72,7 @@ func (id *ManagedIdentity) RegisterID(signer *sdk.Account) {
 func (id *ManagedIdentity) RegIDWithAttributes(attr map[string]string, signer *sdk.Account) {
 	s := GetSdk("")
 	// ctl, err := id.NewController("2", keypair.PK_ECDSA, keypair.P256, s.SHA256withECDSA, password)
-	i, err := sdk.NewIdentityFromIdentityData(&id.IdentityData)
+	i, err := id.Identity()
 	if err != nil {
 		log.Fatal(err)
 		return
