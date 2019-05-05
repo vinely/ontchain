@@ -196,11 +196,13 @@ type Identity struct {
 
 // GetDefaultIdentityFromID - generate identity from id string
 func GetDefaultIdentityFromID(id string, passwd []byte) (*Identity, error) {
-	identity, err := NewIdentity(keypair.GetScryptParameters())
-	if err != nil {
-		return nil, err
+	identity := &Identity{
+		ID:          id,
+		scrypt:      keypair.GetScryptParameters(),
+		controllers: make([]*ControllerData, 0),
+		ctrsIDMap:   make(map[string]*ControllerData),
+		ctrsPubMap:  make(map[string]*ControllerData),
 	}
-	identity.ID = id
 	//Key Index start from 1
 	controllerID := "1"
 	controllerData, err := NewControllerData(controllerID, keypair.PK_ECDSA, keypair.P256, s.SHA256withECDSA, passwd)

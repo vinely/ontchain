@@ -29,7 +29,7 @@ func IdentityFormat(fl validator.FieldLevel) bool {
 
 // ManagedIdentity - Get Password in storage
 type ManagedIdentity struct {
-	sdk.Identity
+	sdk.IdentityData
 	Password []byte
 }
 
@@ -39,19 +39,24 @@ func GetIdentityFromID(id string, passwd []byte) (*ManagedIdentity, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ManagedIdentity{*identity, passwd}, nil
+	return &ManagedIdentity{*identity.ToIdentityData(), passwd}, nil
 }
 
 // RegisterID - register id to blockchain
 func (id *ManagedIdentity) RegisterID(signer *sdk.Account) {
-	sdk := GetSdk("")
+	s := GetSdk("")
 	// ctl, err := id.NewController("2", keypair.PK_ECDSA, keypair.P256, s.SHA256withECDSA, password)
-	ctl, err := id.GetControllerByIndex(1, id.Password)
+	i, err := sdk.NewIdentityFromIdentityData(&id.IdentityData)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	_, err = sdk.Native.OntID.RegIDWithPublicKey(0, 20000, signer, id.ID, ctl)
+	ctl, err := i.GetControllerByIndex(1, id.Password)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	_, err = s.Native.OntID.RegIDWithPublicKey(0, 20000, signer, id.ID, ctl)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -60,15 +65,20 @@ func (id *ManagedIdentity) RegisterID(signer *sdk.Account) {
 
 // RegIDWithAttributes -register id with attributes
 func (id *ManagedIdentity) RegIDWithAttributes(attr map[string]string, signer *sdk.Account) {
-	sdk := GetSdk("")
+	s := GetSdk("")
 	// ctl, err := id.NewController("2", keypair.PK_ECDSA, keypair.P256, s.SHA256withECDSA, password)
-	ctl, err := id.GetControllerByIndex(1, id.Password)
+	i, err := sdk.NewIdentityFromIdentityData(&id.IdentityData)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	ctl, err := i.GetControllerByIndex(1, id.Password)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 	attributes := StringMap2Attributes(attr)
-	_, err = sdk.Native.OntID.RegIDWithAttributes(0, 20000, signer, id.ID, ctl, attributes)
+	_, err = s.Native.OntID.RegIDWithAttributes(0, 20000, signer, id.ID, ctl, attributes)
 	if err != nil {
 		log.Fatal(err)
 		return
